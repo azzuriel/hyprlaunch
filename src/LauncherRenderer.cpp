@@ -176,7 +176,10 @@ void LauncherRenderer::initialize() {
     gtk_layer_set_layer(GTK_WINDOW(m_window), GTK_LAYER_SHELL_LAYER_OVERLAY);
     gtk_layer_set_keyboard_mode(GTK_WINDOW(m_window),
                                  GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND);
-    // No anchors → compositor centers the layer surface automatically
+    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, FALSE);
+    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_BOTTOM, FALSE);
+    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, FALSE);
+    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_RIGHT, FALSE);
     gtk_layer_set_namespace(GTK_WINDOW(m_window), "hyprlaunch");
 
     gtk_widget_add_css_class(m_window, "HyprLaunch");
@@ -232,10 +235,7 @@ void LauncherRenderer::show() {
 
     updateResults();
 
-    // Center on focused monitor
-    centerOnMonitor();
-
-    // Show and focus
+    // Show and focus (layer-shell centers automatically with no anchors)
     gtk_widget_set_visible(m_window, TRUE);
     gtk_widget_grab_focus(m_searchEntry);
     m_visible = true;
@@ -275,72 +275,37 @@ void LauncherRenderer::setMode(LauncherMode mode) {
 // ============================================================================
 
 void LauncherRenderer::centerOnMonitor() {
-    // Query focused monitor via hyprctl
-    FILE* pipe = popen("hyprctl monitors -j 2>/dev/null", "r");
-    if (!pipe) return;
+    GdkDisplay* display = gdk_display_get_default();
+    if (!display) return;
 
-    char buf[4096] = {};
-    std::string result;
-    while (fgets(buf, sizeof(buf), pipe)) result += buf;
-    pclose(pipe);
+    GdkSurface* surface = gtk_native_get_surface(GTK_NATIVE(m_window));
+    GdkMonitor* monitor = nullptr;
 
-    // Parse focused monitor dimensions
-    // Find the monitor with "focused": true
-    int monX = 0, monY = 0, monW = 1920, monH = 1080;
-    double scale = 1.0;
-
-    size_t focusedPos = result.find("\"focused\": true");
-    if (focusedPos == std::string::npos)
-        focusedPos = result.find("\"focused\":true");
-
-    if (focusedPos != std::string::npos) {
-        // Search backwards for the monitor's opening brace
-        size_t blockStart = result.rfind('{', focusedPos);
-        if (blockStart != std::string::npos) {
-            std::string block = result.substr(blockStart, focusedPos - blockStart + 50);
-
-            auto extractInt = [&block](const std::string& key) -> int {
-                size_t p = block.find("\"" + key + "\":");
-                if (p == std::string::npos) p = block.find("\"" + key + "\": ");
-                if (p != std::string::npos) {
-                    size_t numStart = block.find(':', p) + 1;
-                    while (numStart < block.size() && block[numStart] == ' ') numStart++;
-                    return std::atoi(block.c_str() + numStart);
-                }
-                return 0;
-            };
-
-            auto extractDouble = [&block](const std::string& key) -> double {
-                size_t p = block.find("\"" + key + "\":");
-                if (p == std::string::npos) p = block.find("\"" + key + "\": ");
-                if (p != std::string::npos) {
-                    size_t numStart = block.find(':', p) + 1;
-                    while (numStart < block.size() && block[numStart] == ' ') numStart++;
-                    return std::atof(block.c_str() + numStart);
-                }
-                return 1.0;
-            };
-
-            monX = extractInt("x");
-            monY = extractInt("y");
-            monW = extractInt("width");
-            monH = extractInt("height");
-            scale = extractDouble("scale");
-            if (scale <= 0) scale = 1.0;
-        }
+    if (surface) {
+        monitor = gdk_display_get_monitor_at_surface(display, surface);
     }
 
-    // Calculate centered position (in scaled coordinates)
-    int scaledW = static_cast<int>(monW / scale);
-    int scaledH = static_cast<int>(monH / scale);
-    int marginLeft = (scaledW - m_config.windowWidth) / 2;
-    int marginTop = (scaledH - m_config.windowHeight) / 2 - 50;  // Slightly above center
+    if (!monitor) {
+        // Fallback: first monitor
+        GListModel* monitors = gdk_display_get_monitors(display);
+        if (g_list_model_get_n_items(monitors) > 0)
+            monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+    }
+
+    if (!monitor) return;
+
+    GdkRectangle geo;
+    gdk_monitor_get_geometry(monitor, &geo);
+    int scale = gdk_monitor_get_scale_factor(monitor);
+    if (scale <= 0) scale = 1;
+
+    int monW = geo.width;
+    int monH = geo.height;
+
+    int marginLeft = (monW - m_config.windowWidth) / 2;
+    int marginTop = (monH - m_config.windowHeight) / 2;
     if (marginLeft < 0) marginLeft = 0;
     if (marginTop < 0) marginTop = 0;
-
-    // Add monitor offset for multi-monitor
-    marginLeft += monX;
-    marginTop += monY;
 
     gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, marginLeft);
     gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, marginTop);
