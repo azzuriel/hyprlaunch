@@ -73,7 +73,8 @@ HyprLaunch operates in two modes:
 ## Layer-Shell Window
 
 - Anchored to **top-left** with margins for centering
-- `centerOnMonitor()` queries `hyprctl monitors -j` for focused monitor dimensions
+- All 4 edges anchored → surface fills entire monitor
+- Content centered via GTK align (HALIGN_CENTER, VALIGN_CENTER)
 - Margins calculated: `marginLeft = (monitorWidth - windowWidth) / 2`
 - Window size configured in `~/.config/hypr/hyprlaunch.toml`
 - No Hyprland windowrules needed (layer-shell windows are not regular clients)

@@ -171,15 +171,11 @@ void LauncherRenderer::initialize() {
     gtk_window_set_decorated(GTK_WINDOW(m_window), FALSE);
     gtk_window_set_resizable(GTK_WINDOW(m_window), FALSE);
 
-    // Layer-shell setup
+    // Layer-shell setup: no anchors + default_size → compositor centers
     gtk_layer_init_for_window(GTK_WINDOW(m_window));
     gtk_layer_set_layer(GTK_WINDOW(m_window), GTK_LAYER_SHELL_LAYER_OVERLAY);
     gtk_layer_set_keyboard_mode(GTK_WINDOW(m_window),
                                  GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, FALSE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_BOTTOM, FALSE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, FALSE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_RIGHT, FALSE);
     gtk_layer_set_namespace(GTK_WINDOW(m_window), "hyprlaunch");
 
     gtk_widget_add_css_class(m_window, "HyprLaunch");
@@ -235,7 +231,7 @@ void LauncherRenderer::show() {
 
     updateResults();
 
-    // Show and focus (layer-shell centers automatically with no anchors)
+    // Show and focus
     gtk_widget_set_visible(m_window, TRUE);
     gtk_widget_grab_focus(m_searchEntry);
     m_visible = true;
@@ -268,47 +264,6 @@ bool LauncherRenderer::isVisible() const {
 
 void LauncherRenderer::setMode(LauncherMode mode) {
     m_mode = mode;
-}
-
-// ============================================================================
-// Window Centering
-// ============================================================================
-
-void LauncherRenderer::centerOnMonitor() {
-    GdkDisplay* display = gdk_display_get_default();
-    if (!display) return;
-
-    GdkSurface* surface = gtk_native_get_surface(GTK_NATIVE(m_window));
-    GdkMonitor* monitor = nullptr;
-
-    if (surface) {
-        monitor = gdk_display_get_monitor_at_surface(display, surface);
-    }
-
-    if (!monitor) {
-        // Fallback: first monitor
-        GListModel* monitors = gdk_display_get_monitors(display);
-        if (g_list_model_get_n_items(monitors) > 0)
-            monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
-    }
-
-    if (!monitor) return;
-
-    GdkRectangle geo;
-    gdk_monitor_get_geometry(monitor, &geo);
-    int scale = gdk_monitor_get_scale_factor(monitor);
-    if (scale <= 0) scale = 1;
-
-    int monW = geo.width;
-    int monH = geo.height;
-
-    int marginLeft = (monW - m_config.windowWidth) / 2;
-    int marginTop = (monH - m_config.windowHeight) / 2;
-    if (marginLeft < 0) marginLeft = 0;
-    if (marginTop < 0) marginTop = 0;
-
-    gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, marginLeft);
-    gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, marginTop);
 }
 
 // ============================================================================

@@ -56,9 +56,6 @@ private:
     void onSearch(const std::string& text);
     void activateSelected();
 
-    // Window positioning
-    void centerOnMonitor();
-
     // Keyboard handler
     static gboolean onKeyPress(GtkEventControllerKey*, guint keyval, guint,
                                GdkModifierType, gpointer data);
