@@ -1,0 +1,13 @@
+[repository]
+name = "hyprlaunch"
+authors = ["Jan Ohlmann (azzuriel) <jan.ohlmann@hotmail.com>", "Leon Marzoll <leon.marzoll@gmail.com>"]
+
+[hyprlaunch]
+description = "Layer-shell app launcher for Hyprland with GTK4 UI"
+version = "0.1.0"
+output = "build/hyprlaunch.so"
+build = [
+    "cmake -DCMAKE_BUILD_TYPE=Release -B build",
+    "cmake --build build",
+    "mkdir -p $HOME/.local/bin && cp build/hyprlaunch-ui $HOME/.local/bin/"
+]
