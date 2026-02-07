@@ -58,7 +58,10 @@ static gboolean onSocketAccept(GIOChannel*, GIOCondition, gpointer) {
 
     if (n > 0 && g_renderer) {
         std::string cmd(buf, static_cast<size_t>(n));
-        if (cmd == "toggle") g_renderer->toggle();
+        if (cmd == "toggle") {
+            g_renderer->setMode(LauncherMode::Apps);
+            g_renderer->toggle();
+        }
         else if (cmd == "show") g_renderer->show();
         else if (cmd == "hide") g_renderer->hide();
         else if (cmd == "apps") {
