@@ -36,8 +36,8 @@ Layer-shell app launcher for Hyprland. 1:1 port of the AGS app launcher (TypeScr
 
 1. **hyprlaunch.so** - Hyprland plugin (loaded into compositor)
    - NO GTK, NO threads, NO blocking calls
-   - Dispatchers: `hyprlaunch:toggle`, `hyprlaunch:show`, `hyprlaunch:hide`
-   - IPC via `hyprctl hyprlaunch <command>`
+   - Dispatchers: `hyprlaunch:toggle`, `hyprlaunch:show`, `hyprlaunch:hide`, `hyprlaunch:apps`, `hyprlaunch:helpers`
+   - IPC via `hyprctl hyprlaunch:<command>` (e.g. `hyprctl hyprlaunch:helpers`)
    - Communicates with UI via `fork()` + `execlp("hyprlaunch-ui")`
 
 2. **hyprlaunch-ui** - Standalone GTK4 binary (separate Wayland client process)

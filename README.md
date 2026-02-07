@@ -163,23 +163,23 @@ bind = , Escape, hyprlaunch:hide
 
 ```bash
 # Toggle launcher window
-hyprctl dispatch hyprlaunch:toggle
+hyprctl hyprlaunch:toggle
 
 # Show / Hide
-hyprctl dispatch hyprlaunch:show
-hyprctl dispatch hyprlaunch:hide
-
-# Via hyprctl command interface
-hyprctl hyprlaunch toggle
-hyprctl hyprlaunch show
-hyprctl hyprlaunch hide
+hyprctl hyprlaunch:show
+hyprctl hyprlaunch:hide
 
 # Mode switching
-hyprctl hyprlaunch apps      # Switch to apps mode and show
-hyprctl hyprlaunch helpers   # Switch to helpers mode and show
+hyprctl hyprlaunch:apps       # Show in apps mode
+hyprctl hyprlaunch:helpers    # Show in helpers mode
 
 # Reload config
-hyprctl hyprlaunch reload
+hyprctl hyprlaunch:reload
+
+# Via dispatcher (same effect)
+hyprctl dispatch hyprlaunch:toggle
+hyprctl dispatch hyprlaunch:show
+hyprctl dispatch hyprlaunch:helpers
 ```
 
 ### Keyboard Controls (Inside Launcher Window)
@@ -239,6 +239,9 @@ hyprlaunch/
 │   ├── main_ui.cpp              # UI binary entry (socket listener, GTK loop)
 │   ├── LauncherRenderer.cpp     # GTK4 window, CSS, widgets, keyboard nav
 │   └── AppDiscovery.cpp         # App discovery, search, calculator, launch
+├── docs/
+│   ├── ARCH_HYPRLAUNCH_LAUNCHER.md  # Launcher architecture
+│   └── WRFL_HYPRLAUNCH_RESTART.md   # Restart workflow
 ├── build.sh                     # Build script
 ├── CMakeLists.txt               # Two targets: .so plugin + UI binary
 ├── CLAUDE.md                    # AI assistant guidelines

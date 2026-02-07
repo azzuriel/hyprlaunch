@@ -176,8 +176,7 @@ void LauncherRenderer::initialize() {
     gtk_layer_set_layer(GTK_WINDOW(m_window), GTK_LAYER_SHELL_LAYER_OVERLAY);
     gtk_layer_set_keyboard_mode(GTK_WINDOW(m_window),
                                  GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+    // No anchors → compositor centers the layer surface automatically
     gtk_layer_set_namespace(GTK_WINDOW(m_window), "hyprlaunch");
 
     gtk_widget_add_css_class(m_window, "HyprLaunch");
