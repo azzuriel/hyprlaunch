@@ -70,7 +70,7 @@ static gboolean onSocketAccept(GIOChannel*, GIOCondition, gpointer) {
         }
         else if (cmd == "helpers") {
             g_renderer->setMode(LauncherMode::Helpers);
-            if (!g_renderer->isVisible()) g_renderer->show();
+            g_renderer->toggle();
         }
     }
 
