@@ -76,7 +76,7 @@ Config loadConfig() {
         std::string value = trim(line.substr(eq + 1));
 
         if (key == "window_width") config.windowWidth = parseInt(value);
-        else if (key == "window_height") config.windowHeight = parseInt(value);
+        else if (key == "visible_items") config.visibleItems = parseInt(value);
         else if (key == "hotkey") config.hotkey = parseString(value);
     }
 
@@ -96,7 +96,7 @@ bool saveConfig(const Config& config) {
     file << "# HyprLaunch Configuration\n\n";
     file << "[window]\n";
     file << "window_width = " << config.windowWidth << "\n";
-    file << "window_height = " << config.windowHeight << "\n\n";
+    file << "visible_items = " << config.visibleItems << "\n\n";
 
     file << "[general]\n";
     file << "hotkey = \"" << config.hotkey << "\"\n";

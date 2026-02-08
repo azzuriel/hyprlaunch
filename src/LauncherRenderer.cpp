@@ -22,8 +22,6 @@ static const char* LAUNCHER_CSS = R"CSS(
   border: 1px solid #2a2a2a;
   border-radius: 0;
   padding: 0;
-  min-width: 530px;
-  min-height: 530px;
 }
 
 .launcher-search {
@@ -52,7 +50,6 @@ static const char* LAUNCHER_CSS = R"CSS(
 }
 
 .launcher-scroll {
-  min-height: 480px;
 }
 
 .launcher-list {
@@ -169,17 +166,16 @@ void LauncherRenderer::initialize() {
     gtk_window_set_decorated(GTK_WINDOW(m_window), FALSE);
     gtk_window_set_resizable(GTK_WINDOW(m_window), FALSE);
 
-    // Layer-shell setup: anchor all 4 edges + explicit size
-    // Per wlr-layer-shell spec: smaller size + opposite anchors = centered
     gtk_layer_init_for_window(GTK_WINDOW(m_window));
     gtk_layer_set_layer(GTK_WINDOW(m_window), GTK_LAYER_SHELL_LAYER_OVERLAY);
     gtk_layer_set_keyboard_mode(GTK_WINDOW(m_window),
-                                 GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND);
+                                 GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE);
     gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
     gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-    gtk_widget_set_size_request(m_window, m_config.windowWidth, m_config.windowHeight);
+    gtk_window_set_default_size(GTK_WINDOW(m_window),
+                                 m_config.windowWidth, m_config.windowHeight());
+    gtk_widget_set_size_request(m_window,
+                                 m_config.windowWidth, m_config.windowHeight());
     gtk_layer_set_namespace(GTK_WINDOW(m_window), "hyprlaunch");
 
     gtk_widget_add_css_class(m_window, "HyprLaunch");
@@ -235,9 +231,28 @@ void LauncherRenderer::show() {
 
     updateResults();
 
-    // Show and focus
+    // Center on monitor via GDK
+    GdkDisplay* display = gdk_display_get_default();
+    if (display) {
+        GListModel* monitors = gdk_display_get_monitors(display);
+        if (g_list_model_get_n_items(monitors) > 0) {
+            GdkMonitor* monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
+            GdkRectangle geo;
+            gdk_monitor_get_geometry(monitor, &geo);
+
+            int marginLeft = (geo.width - m_config.windowWidth) / 2;
+            int marginTop = (geo.height - m_config.windowHeight()) / 2;
+            if (marginLeft < 0) marginLeft = 0;
+            if (marginTop < 0) marginTop = 0;
+
+            gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, marginLeft);
+            gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, marginTop);
+            g_object_unref(monitor);
+        }
+    }
+
+    // Show window
     gtk_widget_set_visible(m_window, TRUE);
-    gtk_widget_grab_focus(m_searchEntry);
     m_visible = true;
 
     // Reset scroll
@@ -287,6 +302,7 @@ void LauncherRenderer::buildUI() {
 
     m_searchEntry = gtk_entry_new();
     gtk_widget_set_hexpand(m_searchEntry, TRUE);
+    gtk_widget_set_can_focus(m_searchEntry, FALSE);
     gtk_widget_add_css_class(m_searchEntry, "launcher-search-input");
     gtk_entry_set_placeholder_text(GTK_ENTRY(m_searchEntry),
                                     "Search apps... (= for calculator)");
@@ -647,8 +663,27 @@ gboolean LauncherRenderer::onKeyPress(GtkEventControllerKey*, guint keyval,
             }
             return TRUE;
 
-        default:
+        case GDK_KEY_BackSpace: {
+            const char* t = gtk_editable_get_text(GTK_EDITABLE(self->m_searchEntry));
+            std::string cur = t ? t : "";
+            if (!cur.empty()) {
+                cur.pop_back();
+                gtk_editable_set_text(GTK_EDITABLE(self->m_searchEntry), cur.c_str());
+            }
+            return TRUE;
+        }
+
+        default: {
+            guint32 ch = gdk_keyval_to_unicode(keyval);
+            if (ch > 31 && ch < 127) {
+                const char* t = gtk_editable_get_text(GTK_EDITABLE(self->m_searchEntry));
+                std::string cur = t ? t : "";
+                cur += static_cast<char>(ch);
+                gtk_editable_set_text(GTK_EDITABLE(self->m_searchEntry), cur.c_str());
+                return TRUE;
+            }
             return FALSE;
+        }
     }
 }
 
