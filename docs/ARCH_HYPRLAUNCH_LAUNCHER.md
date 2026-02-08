@@ -15,7 +15,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │ hyprlaunch-ui (standalone Wayland client)                        │
 │   GTK4 + gtk4-layer-shell overlay window                        │
-│     → app discovery, fuzzy search, calculator, helpers mode     │
+│     → app discovery, substring search, calculator, helpers mode     │
 └──────────────────────┬──────────────────────────────────────────┘
                        │ GDesktopAppInfo / filesystem scan
                        ▼
@@ -31,7 +31,7 @@ HyprLaunch operates in two modes:
 
 ### Apps Mode (default)
 - Discovers installed applications via `GDesktopAppInfo`
-- Fuzzy search with weighted scoring (name × 10 > description > keywords)
+- Substring search with weighted scoring (name × 10 > description > keywords)
 - Recent apps (last 10) shown when search is empty
 - Calculator mode with `=` prefix (e.g. `=2+2`)
 - Launch via `g_app_info_launch()`

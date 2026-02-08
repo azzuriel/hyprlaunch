@@ -2,13 +2,13 @@
 
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE) &nbsp; [![Hyprland](https://img.shields.io/badge/Hyprland-0.53%2B-blue.svg)](https://hyprland.org) &nbsp; [![C++](https://img.shields.io/badge/C%2B%2B-23-blue.svg)](https://en.cppreference.com/w/cpp/23) &nbsp; [![Build](https://img.shields.io/badge/build-CMake-green.svg)](CMakeLists.txt)
 
-A Hyprland plugin for a **layer-shell app launcher** with fuzzy search, recent apps, calculator mode and helper scripts.
+A Hyprland plugin for a **layer-shell app launcher** with substring search, recent apps, calculator mode and helper scripts.
 
 ![HyprLaunch Screenshot](docs/screenshots/azz-hyprlaunch.png)
 
 ## Overview
 
-HyprLaunch is a 1:1 port of the AGS app launcher to native C++. It runs as a GTK4 layer-shell overlay centered on the focused monitor, with app discovery via GDesktopAppInfo, fuzzy search scoring, and a dual-mode launcher for desktop apps and helper scripts.
+HyprLaunch is a 1:1 port of the AGS app launcher to native C++. It runs as a GTK4 layer-shell overlay centered on the focused monitor, with app discovery via GDesktopAppInfo, substring search scoring, and a dual-mode launcher for desktop apps and helper scripts.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -21,7 +21,7 @@ HyprLaunch is a 1:1 port of the AGS app launcher to native C++. It runs as a GTK
 ┌─────────────────────────────────────────────────────────────────┐
 │ hyprlaunch-ui (standalone Wayland client)                        │
 │   GTK4 + gtk4-layer-shell overlay window                        │
-│     → fuzzy search, recent apps, calculator, keyboard nav       │
+│     → substring search, recent apps, calculator, keyboard nav       │
 └──────────────────────┬──────────────────────────────────────────┘
                        │ GDesktopAppInfo / filesystem
                        ▼
@@ -40,7 +40,7 @@ HyprLaunch is a 1:1 port of the AGS app launcher to native C++. It runs as a GTK
 - **App icons** - Native GTK4 icon theme lookup with fallback
 
 ### Search
-- **Fuzzy search** - Substring matching with weighted scoring (name × 10 > description > keywords)
+- **Substring search** - Weighted scoring (name × 10 > description > keywords)
 - **Recent apps** - Last 10 launched apps shown first when search is empty
 - **Calculator mode** - Prefix `=` for math expressions (e.g. `=2+2`), Enter copies result
 - **Real-time filtering** - Results update as you type

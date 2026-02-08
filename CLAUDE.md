@@ -45,7 +45,7 @@ Layer-shell app launcher for Hyprland. 1:1 port of the AGS app launcher (TypeScr
    - Receives commands via Unix socket `/tmp/hyprlaunch-ui.sock`
    - App discovery via GDesktopAppInfo
    - Helper scripts from `~/.local/bin/helpers/*.sh`
-   - Fuzzy search, recent apps, calculator mode
+   - Substring search, recent apps, calculator mode
    - Keyboard navigation: Up/Down/PgUp/PgDn/Home/End/Tab/Enter/Escape
 
 ### Critical Safety Rules
