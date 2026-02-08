@@ -1,5 +1,7 @@
 # Architecture: HyprLaunch Launcher
 
+![HyprLaunch Screenshot](screenshots/azz-hyprlaunch.png)
+
 ## Layer Stack
 
 ```

@@ -4,6 +4,8 @@
 
 A Hyprland plugin for a **layer-shell app launcher** with fuzzy search, recent apps, calculator mode and helper scripts.
 
+![HyprLaunch Screenshot](docs/screenshots/azz-hyprlaunch.png)
+
 ## Overview
 
 HyprLaunch is a 1:1 port of the AGS app launcher to native C++. It runs as a GTK4 layer-shell overlay centered on the focused monitor, with app discovery via GDesktopAppInfo, fuzzy search scoring, and a dual-mode launcher for desktop apps and helper scripts.
