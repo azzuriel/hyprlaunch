@@ -170,8 +170,6 @@ void LauncherRenderer::initialize() {
     gtk_layer_set_layer(GTK_WINDOW(m_window), GTK_LAYER_SHELL_LAYER_OVERLAY);
     gtk_layer_set_keyboard_mode(GTK_WINDOW(m_window),
                                  GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
     gtk_window_set_default_size(GTK_WINDOW(m_window),
                                  m_config.windowWidth, m_config.windowHeight());
     gtk_widget_set_size_request(m_window,
@@ -230,26 +228,6 @@ void LauncherRenderer::show() {
     }
 
     updateResults();
-
-    // Center on monitor via GDK
-    GdkDisplay* display = gdk_display_get_default();
-    if (display) {
-        GListModel* monitors = gdk_display_get_monitors(display);
-        if (g_list_model_get_n_items(monitors) > 0) {
-            GdkMonitor* monitor = GDK_MONITOR(g_list_model_get_item(monitors, 0));
-            GdkRectangle geo;
-            gdk_monitor_get_geometry(monitor, &geo);
-
-            int marginLeft = (geo.width - m_config.windowWidth) / 2;
-            int marginTop = (geo.height - m_config.windowHeight()) / 2;
-            if (marginLeft < 0) marginLeft = 0;
-            if (marginTop < 0) marginTop = 0;
-
-            gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_LEFT, marginLeft);
-            gtk_layer_set_margin(GTK_WINDOW(m_window), GTK_LAYER_SHELL_EDGE_TOP, marginTop);
-            g_object_unref(monitor);
-        }
-    }
 
     // Show window
     gtk_widget_set_visible(m_window, TRUE);
