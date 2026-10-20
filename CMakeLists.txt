@@ -36,6 +36,8 @@ target_include_directories(hyprlaunch PRIVATE
 target_compile_options(hyprlaunch PRIVATE
     -Wall -Wextra -Wpedantic -fPIC
     ${HYPRLAND_CFLAGS_OTHER}
+    # GNU_UNIQUE symbols make the .so non-unloadable, so hyprpm update would keep the old code loaded
+    $<$<CXX_COMPILER_ID:GNU>:-fno-gnu-unique>
 )
 
 set_target_properties(hyprlaunch PROPERTIES
