@@ -12,7 +12,7 @@ killall -9 hyprlaunch-ui
 ## One-Liner (kill + reopen)
 
 ```bash
-killall -9 hyprlaunch-ui; sleep 0.3; hyprctl dispatch hyprlaunch:toggle
+killall -9 hyprlaunch-ui; sleep 0.3; hyprctl hyprlaunch:toggle
 ```
 
 ## Testing Dev Build (without hyprpm install)

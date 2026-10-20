@@ -5,6 +5,9 @@
 #define WLR_USE_UNSTABLE
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/Compositor.hpp>
+#include <hyprland/src/config/ConfigManager.hpp>
+
+#include <lua.h>
 
 #include "hyprlaunch/Globals.hpp"
 
@@ -76,6 +79,35 @@ static SDispatchResult dispatchHelpers(std::string) {
 }
 
 // ============================================================================
+// Lua functions (hl.plugin.hyprlaunch.<fn>) - Lua config mode
+// ============================================================================
+
+static int luaShow(lua_State*) {
+    sendUICommand("show");
+    return 0;
+}
+
+static int luaHide(lua_State*) {
+    sendUICommand("hide");
+    return 0;
+}
+
+static int luaToggle(lua_State*) {
+    sendUICommand("toggle");
+    return 0;
+}
+
+static int luaApps(lua_State*) {
+    sendUICommand("apps");
+    return 0;
+}
+
+static int luaHelpers(lua_State*) {
+    sendUICommand("helpers");
+    return 0;
+}
+
+// ============================================================================
 // Plugin Lifecycle
 // ============================================================================
 
@@ -103,18 +135,20 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::registerHyprCtlCommand(g_handle,
         SHyprCtlCommand{"hyprlaunch:reload", true, cmdReload});
 
-    // Register dispatchers
-    HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:show", dispatchShow);
-    HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:hide", dispatchHide);
-    HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:toggle", dispatchToggle);
-    HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:apps", dispatchApps);
-    HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:helpers", dispatchHelpers);
-
-    // Register config values
-    HyprlandAPI::addConfigValue(handle, "plugin:hyprlaunch:enabled",
-                                Hyprlang::INT{1});
-    HyprlandAPI::addConfigValue(handle, "plugin:hyprlaunch:hotkey",
-                                Hyprlang::STRING{"SUPER D"});
+    // Register dispatchers (hyprland.conf) or Lua functions (hyprland.lua)
+    if (Config::mgr()->type() == Config::CONFIG_LEGACY) {
+        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:show", dispatchShow);
+        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:hide", dispatchHide);
+        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:toggle", dispatchToggle);
+        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:apps", dispatchApps);
+        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:helpers", dispatchHelpers);
+    } else {
+        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "show", luaShow);
+        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "hide", luaHide);
+        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "toggle", luaToggle);
+        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "apps", luaApps);
+        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "helpers", luaHelpers);
+    }
 
     HyprlandAPI::addNotification(handle,
         "[HyprLaunch] Loaded successfully!",

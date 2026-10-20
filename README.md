@@ -124,17 +124,6 @@ plugin = /usr/lib/hyprland/plugins/hyprlaunch.so
 
 ## Configuration
 
-Add to `~/.config/hypr/hyprland.conf`:
-
-```ini
-# Plugin settings
-plugin:hyprlaunch:enabled = 1
-plugin:hyprlaunch:hotkey = SUPER D
-
-# Keybinding
-bind = $mainMod, D, hyprlaunch:toggle
-```
-
 Optional config file at `~/.config/hypr/hyprlaunch.toml`:
 
 ```toml
@@ -150,7 +139,22 @@ hotkey = "SUPER D"
 
 ### Keybindings
 
-Add to `~/.config/hypr/hyprland.conf`:
+The plugin registers dispatchers for `hyprland.conf` and Lua functions
+(`hl.plugin.hyprlaunch.<fn>`) for `hyprland.lua`. Which set is registered
+depends on the config format Hyprland was started with.
+
+`~/.config/hypr/hyprland.lua`:
+
+```lua
+-- Toggle app launcher
+hl.bind("SUPER + D", function() hl.plugin.hyprlaunch.toggle() end)
+
+-- Show / Hide
+hl.bind("SUPER + SHIFT + D", function() hl.plugin.hyprlaunch.show() end)
+hl.bind("Escape", function() hl.plugin.hyprlaunch.hide() end)
+```
+
+`~/.config/hypr/hyprland.conf`:
 
 ```ini
 # Toggle app launcher
@@ -178,7 +182,12 @@ hyprctl hyprlaunch:helpers    # Show in helpers mode
 # Reload config
 hyprctl hyprlaunch:reload
 
-# Via dispatcher (same effect)
+# Via Lua function (hyprland.lua, same effect)
+hyprctl eval 'hl.plugin.hyprlaunch.toggle()'
+hyprctl eval 'hl.plugin.hyprlaunch.show()'
+hyprctl eval 'hl.plugin.hyprlaunch.helpers()'
+
+# Via dispatcher (hyprland.conf, same effect)
 hyprctl dispatch hyprlaunch:toggle
 hyprctl dispatch hyprlaunch:show
 hyprctl dispatch hyprlaunch:helpers
@@ -256,7 +265,7 @@ hyprlaunch/
 
 1. Check if plugin is loaded: `hyprctl plugins list`
 2. Check if UI binary is in PATH: `which hyprlaunch-ui`
-3. Try manual toggle: `hyprctl dispatch hyprlaunch:toggle`
+3. Try manual toggle: `hyprctl hyprlaunch:toggle`
 4. Try UI standalone: `hyprlaunch-ui --show`
 
 ### No apps listed
