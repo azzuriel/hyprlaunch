@@ -5,7 +5,7 @@
 #define WLR_USE_UNSTABLE
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/Compositor.hpp>
-#include <hyprland/src/config/ConfigManager.hpp>
+#include <hyprland/src/ipc/s1/S1.hpp>
 
 #include <lua.h>
 
@@ -19,63 +19,34 @@ inline HANDLE g_pHandle = nullptr;
 // IPC Command Handlers (hyprctl hyprlaunch:<cmd>)
 // ============================================================================
 
-static std::string cmdShow(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdShow(const IPC::Socket1::SRequest&) {
     sendUICommand("show");
     return "ok";
 }
 
-static std::string cmdHide(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdHide(const IPC::Socket1::SRequest&) {
     sendUICommand("hide");
     return "ok";
 }
 
-static std::string cmdToggle(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdToggle(const IPC::Socket1::SRequest&) {
     sendUICommand("toggle");
     return "ok";
 }
 
-static std::string cmdApps(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdApps(const IPC::Socket1::SRequest&) {
     sendUICommand("apps");
     return "ok";
 }
 
-static std::string cmdHelpers(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdHelpers(const IPC::Socket1::SRequest&) {
     sendUICommand("helpers");
     return "ok";
 }
 
-static std::string cmdReload(eHyprCtlOutputFormat, std::string) {
+static IPC::Socket1::SResponse cmdReload(const IPC::Socket1::SRequest&) {
     reloadConfig();
     return "config reloaded";
-}
-
-// ============================================================================
-// Dispatchers
-// ============================================================================
-
-static SDispatchResult dispatchShow(std::string) {
-    sendUICommand("show");
-    return {.success = true};
-}
-
-static SDispatchResult dispatchHide(std::string) {
-    sendUICommand("hide");
-    return {.success = true};
-}
-
-static SDispatchResult dispatchToggle(std::string) {
-    sendUICommand("toggle");
-    return {.success = true};
-}
-
-static SDispatchResult dispatchApps(std::string) {
-    sendUICommand("apps");
-    return {.success = true};
-}
-
-static SDispatchResult dispatchHelpers(std::string) {
-    sendUICommand("helpers");
-    return {.success = true};
 }
 
 // ============================================================================
@@ -123,32 +94,24 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
     // Register IPC commands (hyprctl hyprlaunch:<cmd>)
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:show", true, cmdShow});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:show", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdShow});
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:hide", true, cmdHide});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:hide", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdHide});
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:toggle", true, cmdToggle});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:toggle", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdToggle});
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:apps", true, cmdApps});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:apps", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdApps});
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:helpers", true, cmdHelpers});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:helpers", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdHelpers});
     HyprlandAPI::registerHyprCtlCommand(g_handle,
-        SHyprCtlCommand{"hyprlaunch:reload", true, cmdReload});
+        IPC::Socket1::SCommand{.name = "hyprlaunch:reload", .match = IPC::Socket1::COMMAND_MATCH_EXACT, .handler = cmdReload});
 
-    // Register dispatchers (hyprland.conf) or Lua functions (hyprland.lua)
-    if (Config::mgr()->type() == Config::CONFIG_LEGACY) {
-        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:show", dispatchShow);
-        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:hide", dispatchHide);
-        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:toggle", dispatchToggle);
-        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:apps", dispatchApps);
-        HyprlandAPI::addDispatcherV2(handle, "hyprlaunch:helpers", dispatchHelpers);
-    } else {
-        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "show", luaShow);
-        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "hide", luaHide);
-        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "toggle", luaToggle);
-        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "apps", luaApps);
-        HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "helpers", luaHelpers);
-    }
+    // Register Lua functions (hl.plugin.hyprlaunch.<fn>)
+    HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "show", luaShow);
+    HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "hide", luaHide);
+    HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "toggle", luaToggle);
+    HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "apps", luaApps);
+    HyprlandAPI::addLuaFunction(handle, "hyprlaunch", "helpers", luaHelpers);
 
     HyprlandAPI::addNotification(handle,
         "[HyprLaunch] Loaded successfully!",
